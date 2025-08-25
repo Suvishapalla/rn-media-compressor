@@ -13,9 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.suvishapalla.rnmediacompressor"
     },
     "android": {
+      "package": "com.suvishapalla.rnmediacompressor",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -24,6 +26,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d663181a-d151-43b7-8d7d-be4cd9b6d5b8"
+      }
+    },
+    "owner": "suvisha"
   }
 }
