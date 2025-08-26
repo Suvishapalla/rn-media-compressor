@@ -1,77 +1,87 @@
-import React, {useState} from 'react';
-import {View, Text, Button, Image, Platform} from 'react-native';
-import {launchImageLibrary} from 'react-native-image-picker';
-import {Image as RNImage, Video} from 'react-native-compressor';
-import RNFS from 'react-native-fs';
+import React, { useState } from "react";
+import { View, Text, Button, Image, StyleSheet, ActivityIndicator } from "react-native";
+import * as ImagePicker from "react-native-image-picker";
+import { Video } from "expo-av"; // for showing video preview
+import { Image as ImageCompressor, Video as VideoCompressor } from "react-native-compressor";
 
 export default function App() {
-  const [log, setLog] = useState('');
-  const [previewUri, setPreviewUri] = useState(null);
-  const [afterSize, setAfterSize] = useState(null);
+  const [media, setMedia] = useState(null);
+  const [compressedUri, setCompressedUri] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [info, setInfo] = useState("");
 
-  const pick = async () => {
-    setLog('Opening library...');
-    const res = await launchImageLibrary({
-      mediaType: 'mixed',
-      selectionLimit: 1,
-      includeExtra: true
-    });
+  // Pick image or video
+  const pickMedia = () => {
+    ImagePicker.launchImageLibrary({ mediaType: "mixed" }, async (response) => {
+      if (response.didCancel || !response.assets) return;
 
-    const a = res.assets?.[0];
-    if (!a?.uri) {
-      setLog('No file selected');
-      return;
-    }
+      const asset = response.assets[0];
+      setMedia(asset);
+      setCompressedUri(null);
+      setInfo("");
 
-    try {
-      const isVideo = !!a.duration || (a.type?.startsWith('video/') ?? false);
-      setLog(`Selected ${isVideo ? 'video' : 'image'}\nOriginal size: ${formatBytes(a.fileSize || 0)}`);
+      try {
+        setLoading(true);
 
-      let outPath;
-
-      if (isVideo) {
-        // sensible defaults. reduce width and bitrate automatically
-        outPath = await Video.compress(a.uri, {
-          compressionMethod: 'auto'
-        });
-      } else {
-        // downscale long edge and apply quality
-        outPath = await RNImage.compress(a.uri, {
-          maxWidth: 1600,
-          quality: 0.8
-        });
+        if (asset.type?.startsWith("image")) {
+          // compress image
+          const result = await ImageCompressor.compress(asset.uri, {
+            maxWidth: 1080,
+            quality: 0.7,
+          });
+          setCompressedUri(result);
+          setInfo(`Image: original ${Math.round(asset.fileSize / 1024)} KB → compressed`);
+        } else if (asset.type?.startsWith("video")) {
+          // compress video
+          const result = await VideoCompressor.compress(asset.uri, {
+            compressionMethod: "auto",
+          });
+          setCompressedUri(result);
+          setInfo(`Video: original ${Math.round(asset.fileSize / 1024 / 1024)} MB → compressed`);
+        }
+      } catch (err) {
+        console.log("Compression error:", err);
+        setInfo("Compression failed");
+      } finally {
+        setLoading(false);
       }
-
-      setPreviewUri(outPath);
-
-      // read size of the output file
-      const stat = await RNFS.stat(outPath.replace('file://', ''));
-      setAfterSize(formatBytes(Number(stat.size)));
-      setLog(l => l + `\nCompressed to: ${outPath}`);
-    } catch (e) {
-      setLog(`Error: ${String(e)}`);
-    }
+    });
   };
 
   return (
-    <View style={{flex: 1, padding: 16, gap: 12, justifyContent: 'center'}}>
-      <Text style={{fontSize: 18, fontWeight: '600'}}>RN Media Compressor</Text>
-      <Button title="Pick photo or video" onPress={pick} />
+    <View style={styles.container}>
+      <Text style={styles.title}>RN Media Compressor</Text>
+      <Button title="Pick photo or video" onPress={pickMedia} />
 
-      {previewUri && previewUri.match(/\.(jpg|jpeg|png|heic|webp)$/i) ? (
-        <Image source={{uri: previewUri}} style={{width: 200, height: 200, resizeMode: 'cover'}} />
-      ) : null}
+      {loading && <ActivityIndicator size="large" style={{ margin: 20 }} />}
 
-      {afterSize ? <Text>Compressed size: {afterSize}</Text> : null}
-      <Text selectable style={{fontSize: 12, color: '#555'}}>{log}</Text>
+      {media && media.type?.startsWith("image") && (
+        <Image source={{ uri: media.uri }} style={styles.preview} />
+      )}
+
+      {media && media.type?.startsWith("video") && (
+        <Video
+          source={{ uri: media.uri }}
+          style={styles.preview}
+          useNativeControls
+          resizeMode="contain"
+        />
+      )}
+
+      {compressedUri && (
+        <>
+          <Text style={styles.info}>{info}</Text>
+          <Text style={styles.uri}>Compressed file: {compressedUri}</Text>
+        </>
+      )}
     </View>
   );
 }
 
-function formatBytes(n) {
-  if (!n || isNaN(n)) return 'unknown';
-  const k = 1024;
-  const units = ['B','KB','MB','GB'];
-  const i = Math.floor(Math.log(n) / Math.log(k));
-  return `${(n/Math.pow(k, i)).toFixed(1)} ${units[i]}`;
-}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  title: { fontSize: 20, fontWeight: "bold", marginBottom: 20 },
+  preview: { width: 250, height: 250, marginTop: 20, borderRadius: 8 },
+  info: { marginTop: 15, fontSize: 14, fontWeight: "500" },
+  uri: { marginTop: 5, fontSize: 12, color: "gray" },
+});
