@@ -14,7 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.suvishapalla.rnmediacompressor"
+      "bundleIdentifier": "com.suvishapalla.rnmediacompressor",
+      "infoPlist": {
+          "NSPhotoLibraryUsageDescription": "We need access to your photos and videos to upload them.",
+          "NSPhotoLibraryAddUsageDescription": "We need to save processed media.",
+          "NSCameraUsageDescription": "We need camera access to capture media.",
+          "NSAppTransportSecurity": { "NSAllowsArbitraryLoads": true },
+          "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.suvishapalla.rnmediacompressor",
