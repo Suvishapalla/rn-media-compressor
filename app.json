@@ -16,11 +16,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.suvishapalla.rnmediacompressor",
       "infoPlist": {
-          "NSPhotoLibraryUsageDescription": "We need access to your photos and videos to upload them.",
-          "NSPhotoLibraryAddUsageDescription": "We need to save processed media.",
-          "NSCameraUsageDescription": "We need camera access to capture media.",
-          "NSAppTransportSecurity": { "NSAllowsArbitraryLoads": true },
-          "ITSAppUsesNonExemptEncryption": false
+        "NSPhotoLibraryUsageDescription": "We need access to your photos and videos to upload them.",
+        "NSPhotoLibraryAddUsageDescription": "We need to save processed media.",
+        "NSCameraUsageDescription": "We need camera access to capture media.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -39,6 +41,9 @@
         "projectId": "d663181a-d151-43b7-8d7d-be4cd9b6d5b8"
       }
     },
-    "owner": "suvisha"
+    "owner": "suvisha",
+    "plugins": [
+      "expo-video"
+    ]
   }
 }

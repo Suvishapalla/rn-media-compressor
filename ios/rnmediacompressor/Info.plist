@@ -48,10 +48,14 @@
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSAllowsArbitraryLoads</key>
-      <false/>
-      <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>We need camera access to capture media.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need to save processed media.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photos and videos to upload them.</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

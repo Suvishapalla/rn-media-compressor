@@ -3,6 +3,7 @@ import { View, Text, Button, Image, StyleSheet, ActivityIndicator } from "react-
 import * as ImagePicker from "react-native-image-picker";
 import { Video } from "expo-av"; // for showing video preview
 import { Image as ImageCompressor, Video as VideoCompressor } from "react-native-compressor";
+import RNFS from "react-native-fs";
 
 export default function App() {
   const [media, setMedia] = useState(null);
@@ -30,14 +31,23 @@ export default function App() {
             quality: 0.7,
           });
           setCompressedUri(result);
-          setInfo(`Image: original ${Math.round(asset.fileSize / 1024)} KB → compressed`);
+          const compressedStats = await RNFS.stat(result);
+          const compressedKB = Math.round(compressedStats.size / 1024);
+          const originalKB = Math.round(asset.fileSize / 1024);
+          setInfo(`Image: original ${originalKB} KB → compressed ${compressedKB} KB`);
+//          setInfo(`Image: original ${Math.round(asset.fileSize / 1024)} KB → compressed`);
         } else if (asset.type?.startsWith("video")) {
           // compress video
           const result = await VideoCompressor.compress(asset.uri, {
             compressionMethod: "auto",
           });
           setCompressedUri(result);
-          setInfo(`Video: original ${Math.round(asset.fileSize / 1024 / 1024)} MB → compressed`);
+          const compressedStats = await RNFS.stat(result);
+          const compressedMB = (compressedStats.size / 1024 / 1024).toFixed(2);
+
+          const originalMB = (asset.fileSize / 1024 / 1024).toFixed(2);
+          setInfo(`Video: original ${originalMB} MB → compressed ${compressedMB} MB`);
+//          setInfo(`Video: original ${Math.round(asset.fileSize / 1024 / 1024)} MB → compressed`);
         }
       } catch (err) {
         console.log("Compression error:", err);
